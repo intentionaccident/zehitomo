@@ -6,7 +6,7 @@ module.exports = env => {
 		env = {}
 	}
 	return {
-		entry: ["bootstrap/dist/css/bootstrap.min.css", "./src/index.tsx"],
+		entry: ["bootstrap/dist/css/bootstrap.min.css", "./src/styles.sass", "./src/index.tsx"],
 		mode: env.production ? 'production' : 'development',
 		devtool: "source-map",
 		devServer: {

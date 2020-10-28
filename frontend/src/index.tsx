@@ -25,8 +25,11 @@ interface SearchResult {
 
 interface Image {
 	id: string;
+	width: number;
+	height: number;
 	urls: {
 		thumb: string;
+		small: string;
 	}
 }
 
@@ -45,7 +48,7 @@ interface IState {
 
 }
 
-function contestReducer(state: IState, action: Action<ActionType>): IState {
+function mainReducer(state: IState, action: Action<ActionType>): IState {
 	return state;
 }
 
@@ -58,7 +61,7 @@ const store = createStore(
 			storage,
 			whitelist: []
 		},
-		contestReducer
+		mainReducer
 	),
 	{
 		musicPlayer: {
@@ -69,11 +72,37 @@ const store = createStore(
 )
 
 function ImageDisplay(props: {image: Image}): JSX.Element {
-	return <img src={props.image.urls.thumb}></img>;
+	return <img src={props.image.urls.small}></img>;
+}
+
+interface ImageColumn {
+	images: Image[],
+	length: number,
+	index: number,
 }
 
 function ImageRack(props: {images: Image[]}): JSX.Element {
-	return <>{props.images.map(image => <ImageDisplay key={image.id} image={image}/>)}</>
+	const imageColumns: ImageColumn[] = [...Array(3)].map((_, index) => ({
+		images: [],
+		length: 0,
+		index
+	}));
+
+	for(const image of props.images) {
+		imageColumns[0].images.push(image);
+		imageColumns[0].length += image.height;
+		imageColumns.sort((a, b) => a.length - b.length);
+	}
+
+	imageColumns.sort((a, b) => a.index - b.index);
+
+	return <div className="d-flex">
+		{imageColumns.map(column => {
+			return <div key={column.index}>{
+				column.images.map(image => <ImageDisplay key={image.id} image={image}/>)
+			}</div>
+		})}
+	</div>
 }
 
 function ImageSearch(): JSX.Element {
