@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, compose, Action, Dispatch } from "redux";
-import { Provider } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -11,6 +11,10 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 enum ActionType {
 	SearchCompleted
+}
+
+interface SearchCompletedAction extends Action<ActionType> {
+	result: SearchResult;
 }
 
 function buildApiUrl(path: string): URL {
@@ -33,7 +37,7 @@ interface Image {
 	}
 }
 
-function search(query: string): Promise<SearchResult> {
+function search(dispatch: Dispatch, query: string): Promise<SearchResult> {
 	const url = buildApiUrl(`search`);
 	const queryParameters: Record<string, string> = {
 		query
@@ -41,14 +45,36 @@ function search(query: string): Promise<SearchResult> {
 	url.search = new URLSearchParams(queryParameters).toString();
 
 	return fetch(url.toString())
-		.then(response => response.json());
+		.then(response => response.json())
+		.then(result => {
+			dispatch({
+				type: ActionType.SearchCompleted,
+				result
+			});
+			return result;
+		});
 }
 
-interface IState {
-
+interface State {
+	images: Record<string, Image>
 }
 
-function mainReducer(state: IState, action: Action<ActionType>): IState {
+function mainReducer(state: State, action: Action<ActionType>): State {
+	switch (action.type) {
+		case ActionType.SearchCompleted: {
+			const searchCompletedAction = action as SearchCompletedAction;
+			return {
+				...state,
+				images: {
+					...state.images,
+					...searchCompletedAction.result.photos.results.reduce((total, next) => {
+						total[next.id] = next;
+						return total;
+					}, {} as Record<string, Image>)
+				}
+			}
+		}
+	}
 	return state;
 }
 
@@ -59,16 +85,14 @@ const store = createStore(
 		{
 			key: "root",
 			storage,
-			whitelist: []
+			whitelist: ["images"]
 		},
 		mainReducer
 	),
 	{
-		musicPlayer: {
-			playing: false,
-			videoId: null
-		},
-	} as IState as any
+		images: {}
+	} as State as any,
+	composeEnhancers()
 )
 
 function ImageDisplay(props: {image: Image}): JSX.Element {
@@ -106,20 +130,28 @@ function ImageRack(props: {images: Image[]}): JSX.Element {
 }
 
 function ImageSearch(): JSX.Element {
+	const dispatch = useDispatch();
 	const [searchTaskTimeout, setSearchTaskTimeout] = React.useState<NodeJS.Timeout | null>(null);
 	const [images, setImages] = React.useState<Image[]>([]);
+	const cachedImages = useSelector((state: State) => Object.values(state.images).slice(0, 20));
 	return <Container>
 		<Form.Control type="text" placeholder="Search" onChange={(event) => {
 			if (searchTaskTimeout) {
 				clearTimeout(searchTaskTimeout);
 			}
+
 			const value = event.target.value;
+
 			setSearchTaskTimeout(setTimeout(() => {
 				setSearchTaskTimeout(null);
-				search(value).then(searchResult => setImages(searchResult.photos.results));
-			}, 3000));
+				if (!value) {
+					setImages([]);
+					return;
+				}
+				search(dispatch, value).then(searchResult => setImages(searchResult.photos.results));
+			}, 2000));
 		}} />
-		<ImageRack images={images}/>
+		<ImageRack images={images.length === 0 ? cachedImages : images}/>
 	</Container>
 }
 
