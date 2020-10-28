@@ -17,11 +17,20 @@ function buildApiUrl(path: string): URL {
 	return new URL(`http://localhost/api/${path}`);
 }
 
-interface SearchResults {
-
+interface SearchResult {
+	photos: {
+		results: Image[];
+	}
 }
 
-function search(query: string): Promise<SearchResults> {
+interface Image {
+	id: string;
+	urls: {
+		thumb: string;
+	}
+}
+
+function search(query: string): Promise<SearchResult> {
 	const url = buildApiUrl(`search`);
 	const queryParameters: Record<string, string> = {
 		query
@@ -59,16 +68,17 @@ const store = createStore(
 	} as IState as any
 )
 
-function ImageDisplay(): JSX.Element {
-	return null;
+function ImageDisplay(props: {image: Image}): JSX.Element {
+	return <img src={props.image.urls.thumb}></img>;
 }
 
-function ImageRack(): JSX.Element {
-	return null;
+function ImageRack(props: {images: Image[]}): JSX.Element {
+	return <>{props.images.map(image => <ImageDisplay key={image.id} image={image}/>)}</>
 }
 
 function ImageSearch(): JSX.Element {
 	const [searchTaskTimeout, setSearchTaskTimeout] = React.useState<NodeJS.Timeout | null>(null);
+	const [images, setImages] = React.useState<Image[]>([]);
 	return <Container>
 		<Form.Control type="text" placeholder="Search" onChange={(event) => {
 			if (searchTaskTimeout) {
@@ -77,9 +87,10 @@ function ImageSearch(): JSX.Element {
 			const value = event.target.value;
 			setSearchTaskTimeout(setTimeout(() => {
 				setSearchTaskTimeout(null);
-				search(value).then(console.log);
+				search(value).then(searchResult => setImages(searchResult.photos.results));
 			}, 3000));
 		}} />
+		<ImageRack images={images}/>
 	</Container>
 }
 
