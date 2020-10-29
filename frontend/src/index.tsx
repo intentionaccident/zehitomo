@@ -30,11 +30,12 @@ interface SearchResult {
 
 interface Image {
 	id: string;
-	width: number;
 	height: number;
 	urls: {
-		thumb: string;
 		small: string;
+	}
+	links: {
+		download: string;
 	}
 }
 
@@ -99,7 +100,9 @@ const store = createStore(
 )
 
 function ImageDisplay(props: {image: Image}): JSX.Element {
-	return <img src={props.image.urls.small}></img>;
+	return <a href={props.image.links.download + "?force=true"} download={""}>
+		<img src={props.image.urls.small}/>
+	</a>
 }
 
 interface ImageColumn {
