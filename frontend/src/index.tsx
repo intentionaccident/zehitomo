@@ -6,12 +6,13 @@ import { BrowserRouter } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import Modal from 'react-bootstrap/Modal';
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useViewportScroll } from "framer-motion";
 import styles from "./styles.sass";
-import { DownloadIcon } from '@primer/octicons-react'
+import { DownloadIcon, StarIcon } from '@primer/octicons-react'
 
 enum ActionType {
 	SearchCompleted
@@ -109,18 +110,43 @@ const store = createStore(
 	composeEnhancers()
 )
 
+function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX.Element {
+	return <>
+		<Modal.Header>
+			<Modal.Title>Add to favourites</Modal.Title>
+		</Modal.Header>
+		<Modal.Body>Woohoo, youre reading this text in a modal!</Modal.Body>
+		<Modal.Footer>
+			<Button variant="secondary" onClick={() => props.onHide && props.onHide()}>
+			Close
+			</Button>
+			<Button variant="primary" onClick={() => props.onHide && props.onHide()}>
+			Save Changes
+			</Button>
+		</Modal.Footer>
+	</>
+}
+
 function ImageDisplay(props: {image: Image}): JSX.Element {
-	return <div className={styles.image}>
-		<img src={props.image.urls.small} />
-		<div className={styles.overlay}>
-			<div className="flex-fill" />
-			<div className="d-flex text-white align-items-center p-2">
-				<a href={props.image.user.links.html} className="div pl-2 text-white">{props.image.user.name ?? props.image.user.username}</a>
+	const [showFavouritesModal, setShowFavouritesModal] = React.useState(false);
+
+	return <>
+		<div className={styles.image}>
+			<img src={props.image.urls.small} />
+			<div className={styles.overlay}>
 				<div className="flex-fill" />
-				<Button as="a" variant="light" size="sm" href={props.image.links.download + "?force=true"} download={""}><DownloadIcon size={24}/></Button>
+				<div className="d-flex text-white align-items-center p-2">
+					<a href={props.image.user.links.html} className="div pl-2 text-white">{props.image.user.name ?? props.image.user.username}</a>
+					<div className="flex-fill" />
+					<Button variant="light" size="sm" onClick={() => setShowFavouritesModal(true)}><StarIcon size={20}/></Button>
+					<Button as="a" variant="light" size="sm" href={props.image.links.download + "?force=true"} download={""}><DownloadIcon size={20}/></Button>
+				</div>
 			</div>
 		</div>
-	</div>
+		<Modal show={showFavouritesModal} onHide={() => setShowFavouritesModal(false)} centered>
+			<FavouriteGroupSelector image={props.image} onHide={() => setShowFavouritesModal(false)} />
+		</Modal>
+	</>
 }
 
 interface ImageColumn {
