@@ -7,20 +7,25 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import InputGroup from 'react-bootstrap/InputGroup';
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useViewportScroll } from "framer-motion";
 import styles from "./styles.sass";
-import { DownloadIcon, SearchIcon, StarIcon, CircleIcon, CheckCircleFillIcon, CheckCircleIcon, XIcon } from '@primer/octicons-react'
+import { DownloadIcon, StarIcon, CircleIcon, CheckCircleFillIcon, CheckCircleIcon, XIcon } from '@primer/octicons-react'
 
 enum ActionType {
-	SearchCompleted
+	SearchCompleted,
+	ImageAddedToFavourites,
 }
 
-interface SearchCompletedAction extends Action<ActionType> {
+interface SearchCompletedAction extends Action<ActionType.SearchCompleted> {
 	result: SearchResult;
+}
+
+interface ImageAddedToFavouritesAction extends Action<ActionType.ImageAddedToFavourites> {
+	imageId: string;
+	groups: ImageGroup[];
 }
 
 function buildApiUrl(path: string): URL {
@@ -51,7 +56,12 @@ interface Image {
 	}
 }
 
-function search({ dispatch, query, page, per_page = 10}: { dispatch: Dispatch, query: string, page: number, per_page?: number }): Promise<SearchResult> {
+function search({ dispatch, query, page, per_page = 10}: {
+	dispatch: Dispatch,
+	query: string,
+	page: number,
+	per_page?: number
+}): Promise<SearchResult> {
 	const url = buildApiUrl(`search`);
 	const queryParameters: Record<string, string> = {
 		query,
@@ -63,7 +73,7 @@ function search({ dispatch, query, page, per_page = 10}: { dispatch: Dispatch, q
 	return fetch(url.toString())
 		.then(response => response.json())
 		.then(result => {
-			dispatch({
+			dispatch<SearchCompletedAction>({
 				type: ActionType.SearchCompleted,
 				result
 			});
@@ -71,8 +81,20 @@ function search({ dispatch, query, page, per_page = 10}: { dispatch: Dispatch, q
 		});
 }
 
+function addToFavourites({ dispatch, image, groups }: {
+	dispatch: Dispatch,
+	image: Image,
+	groups: ImageGroup[]
+}): void {
+	dispatch<ImageAddedToFavouritesAction>({
+		type: ActionType.ImageAddedToFavourites,
+		imageId: image.id,
+		groups
+	})
+}
+
 interface ImageGroup {
-	images: Image[];
+	imageIds?: string[];
 	name: string;
 	id: string;
 }
@@ -96,6 +118,28 @@ function mainReducer(state: State, action: Action<ActionType>): State {
 					}, {} as Record<string, Image>)
 				}
 			}
+		} case ActionType.ImageAddedToFavourites: {
+			const imageAddedToFavouritesAction = action as ImageAddedToFavouritesAction;
+			const newGroups = imageAddedToFavouritesAction.groups.filter(group =>
+				state.imageGroups.findIndex(existingGroup => existingGroup.id === group.id) < 0
+			);
+
+			return {
+				...state,
+				imageGroups: state.imageGroups.map(group => {
+					const updatedGroup = imageAddedToFavouritesAction.groups.find(selectedGroup => selectedGroup.id === group.id);
+					if (!updatedGroup) {
+						return group;
+					}
+					return {
+						...group,
+						imageIds: [...group.imageIds, imageAddedToFavouritesAction.imageId]
+					}
+				}).concat(newGroups.map(group => {
+					group.imageIds = [ imageAddedToFavouritesAction.imageId ]
+					return group;
+				}))
+			};
 		}
 	}
 	return state;
@@ -108,7 +152,7 @@ const store = createStore(
 		{
 			key: "root",
 			storage,
-			whitelist: ["images"]
+			whitelist: ["images", "imageGroups"]
 		},
 		mainReducer
 	),
@@ -121,7 +165,8 @@ const store = createStore(
 
 function ImageGroupEntry(props: {
 	group: ImageGroup,
-	isSelected: boolean,
+	isSelected?: boolean,
+	canDelete?: boolean,
 	onChange?: (isSelected: boolean) => void,
 	onDelete?: () => void
 }): JSX.Element {
@@ -157,11 +202,14 @@ function ImageGroupEntry(props: {
 				<span className="ml-2">{props.group.name}</span>
 			</Form.Check.Label>
 			<div className="flex-fill"></div>
-			<div style={{cursor:"pointer"}} onClick={() => {
-				if (props.onDelete) {
-					props.onDelete();
-				}
-			}}><XIcon size={20} /></div>
+			{
+				props.canDelete &&
+				<div style={{cursor:"pointer"}} onClick={() => {
+					if (props.onDelete) {
+						props.onDelete();
+					}
+				}}><XIcon size={20} /></div>
+			}
 		</div>
 	</Form.Check>
 }
@@ -172,7 +220,7 @@ function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX
 	const [newGroupName, setNewGroupName] = React.useState("");
 	const [newImageGroups, setNewImageGroups] = React.useState<ImageGroup[]>([]);
 	const [selectedGroups, setSelectedGroups] = React.useState(
-		(imageGroups.concat(newImageGroups)).filter(group => group.images.indexOf(props.image) >= 0)
+		(imageGroups.concat(newImageGroups)).filter(group => group.imageIds.indexOf(props.image.id) >= 0)
 	);
 
 	function addGroup() {
@@ -180,9 +228,9 @@ function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX
 			return;
 		}
 
-		const newGroup = {
+		const newGroup: ImageGroup = {
 			id: Math.random().toString(36).substring(7),
-			images: [] as Image[],
+			imageIds: [],
 			name: newGroupName
 		};
 
@@ -196,24 +244,29 @@ function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX
 			<Modal.Title>Add to Favourites</Modal.Title>
 		</Modal.Header>
 		<Modal.Body>
-			{newImageGroups.map(group =>
-				<ImageGroupEntry
-					key={group.id}
-					group={group}
-					isSelected={selectedGroups.indexOf(group) >= 0}
-					onChange={(isSelected) => {
-						if (isSelected) {
-							setSelectedGroups(selectedGroups.concat(group));
-							return;
-						}
-						setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
-					}}
-					onDelete={() => {
-						setNewImageGroups(newImageGroups.filter(newGroup => newGroup !== group));
-						setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
-					}}
-				/>
-			)}
+			{
+				imageGroups.map(group => ({group, isNew: false}))
+					.concat(newImageGroups.map(group => ({group, isNew: true})))
+					.map(({group, isNew}) =>
+						<ImageGroupEntry
+							key={group.id}
+							group={group}
+							isSelected={selectedGroups.indexOf(group) >= 0}
+							canDelete={isNew}
+							onChange={(isSelected) => {
+								if (isSelected) {
+									setSelectedGroups(selectedGroups.concat(group));
+									return;
+								}
+								setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
+							}}
+							onDelete={() => {
+								setNewImageGroups(newImageGroups.filter(newGroup => newGroup !== group));
+								setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
+							}}
+						/>
+					)
+			}
 			<Form.Control
 				className="mt-2"
 				type="text"
@@ -230,10 +283,20 @@ function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX
 		</Modal.Body>
 		<Modal.Footer>
 			<Button variant="secondary" onClick={() => props.onHide && props.onHide()}>
-			Cancel
+				Cancel
 			</Button>
-			<Button variant="primary" onClick={() => props.onHide && props.onHide()}>
-			Save
+			<Button variant="primary" onClick={() => {
+				setNewImageGroups([]);
+				addToFavourites({
+					dispatch,
+					image: props.image,
+					groups: selectedGroups,
+				});
+				if (props.onHide) {
+					props.onHide();
+				}
+			}}>
+				Save
 			</Button>
 		</Modal.Footer>
 	</>
