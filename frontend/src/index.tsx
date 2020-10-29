@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, compose, Action } from "redux";
 import { Provider } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Route } from "react-router-dom";
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -74,7 +74,12 @@ ReactDOM.render(
 	<Provider store={store}>
 		<PersistGate loading={null} persistor={persistor}>
 			<BrowserRouter>
-				<ImageSearch/>
+				<Route path="/:slug">
+					<ImageSearch/>
+				</Route>
+				<Route path="/">
+					<ImageSearch/>
+				</Route>
 			</BrowserRouter>
 		</PersistGate>
 	</Provider>,
