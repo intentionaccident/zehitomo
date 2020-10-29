@@ -4,11 +4,14 @@ import { createStore, compose, Action, Dispatch } from "redux";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
+import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
-import { PersistGate } from 'redux-persist/integration/react'
-import { useViewportScroll } from "framer-motion"
+import { PersistGate } from 'redux-persist/integration/react';
+import { useViewportScroll } from "framer-motion";
+import styles from "./styles.sass";
+import { DownloadIcon } from '@primer/octicons-react'
 
 enum ActionType {
 	SearchCompleted
@@ -36,6 +39,13 @@ interface Image {
 	}
 	links: {
 		download: string;
+	}
+	user: {
+		username: string;
+		name: string;
+		links: {
+			html: string;
+		}
 	}
 }
 
@@ -100,9 +110,17 @@ const store = createStore(
 )
 
 function ImageDisplay(props: {image: Image}): JSX.Element {
-	return <a href={props.image.links.download + "?force=true"} download={""}>
-		<img src={props.image.urls.small}/>
-	</a>
+	return <div className={styles.image}>
+		<img src={props.image.urls.small} />
+		<div className={styles.overlay}>
+			<div className="flex-fill" />
+			<div className="d-flex text-white align-items-center p-2">
+				<a href={props.image.user.links.html} className="div pl-2 text-white">{props.image.user.name ?? props.image.user.username}</a>
+				<div className="flex-fill" />
+				<Button as="a" variant="light" size="sm" href={props.image.links.download + "?force=true"} download={""}><DownloadIcon size={24}/></Button>
+			</div>
+		</div>
+	</div>
 }
 
 interface ImageColumn {
@@ -204,7 +222,6 @@ function ImageSearch(): JSX.Element {
 			}, 2000));
 		}} />
 		<ImageRack images={images.length === 0 ? cachedImages : images} onScrollThreshold={(isThresholdBreached) => {
-			console.log(isThresholdBreached);
 			if (!isThresholdBreached || request || !query) {
 				return;
 			}
