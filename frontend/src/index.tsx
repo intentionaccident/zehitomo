@@ -2,12 +2,13 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, compose, Action, Dispatch } from "redux";
 import { Provider, useDispatch, useSelector } from "react-redux";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react'
+import { useViewportScroll } from "framer-motion"
 
 enum ActionType {
 	SearchCompleted
@@ -37,10 +38,12 @@ interface Image {
 	}
 }
 
-function search(dispatch: Dispatch, query: string): Promise<SearchResult> {
+function search({ dispatch, query, page, per_page = 10}: { dispatch: Dispatch, query: string, page: number, per_page?: number }): Promise<SearchResult> {
 	const url = buildApiUrl(`search`);
 	const queryParameters: Record<string, string> = {
-		query
+		query,
+		page: page.toString(),
+		per_page: per_page.toString()
 	};
 	url.search = new URLSearchParams(queryParameters).toString();
 
@@ -105,7 +108,29 @@ interface ImageColumn {
 	index: number,
 }
 
-function ImageRack(props: {images: Image[]}): JSX.Element {
+function testScrollThreshold(
+	scroll: number,
+	scrollProgress: number,
+	threshold: number
+): boolean {
+	const viewHeight = scroll / scrollProgress;
+	return !isNaN(viewHeight) && isFinite(viewHeight) && viewHeight - scroll < threshold;
+}
+
+function ImageRack(props: {images: Image[], onScrollThreshold?: (isPastThreshold: boolean) => void}): JSX.Element {
+	const { scrollY, scrollYProgress } = useViewportScroll()
+	const { onScrollThreshold } = props;
+	React.useEffect(() => {
+		scrollYProgress.onChange(() => {
+			const wasPastThreshold = testScrollThreshold(scrollY.getPrevious(), scrollYProgress.getPrevious(), 800);
+			const isPastThreshold = testScrollThreshold(scrollY.get(), scrollYProgress.get(), 800);
+			if (isPastThreshold !== wasPastThreshold) {
+				onScrollThreshold(isPastThreshold);
+			}
+		})
+		return () => scrollYProgress.clearListeners();
+	}, [scrollY, scrollYProgress, onScrollThreshold]);
+
 	const imageColumns: ImageColumn[] = [...Array(3)].map((_, index) => ({
 		images: [],
 		length: 0,
@@ -133,25 +158,63 @@ function ImageSearch(): JSX.Element {
 	const dispatch = useDispatch();
 	const [searchTaskTimeout, setSearchTaskTimeout] = React.useState<NodeJS.Timeout | null>(null);
 	const [images, setImages] = React.useState<Image[]>([]);
+	const [query, setQuery] = React.useState<string>("");
+	const [page, setPage] = React.useState<number>(1);
+	const [request, setRequest] = React.useState<Promise<void>>(null);
+	const [requestClearCancellationToken, setRequestClearCancellationToken] = React.useState<{isCancelled?: boolean}>({});
+
+	function clearRequestAfterCompletion(newRequest: Promise<void>) {
+		if (requestClearCancellationToken) {
+			requestClearCancellationToken.isCancelled = true;
+		}
+
+		const cancellationToken: {isCancelled?: boolean} = {};
+		setRequestClearCancellationToken(cancellationToken);
+
+		newRequest.then(() => {
+			if (cancellationToken.isCancelled === true) {
+				return;
+			}
+			setRequest(null);
+		})
+		setRequest(newRequest);
+	}
+
 	const cachedImages = useSelector((state: State) => Object.values(state.images).slice(0, 20));
+
 	return <Container>
-		<Form.Control type="text" placeholder="Search" onChange={(event) => {
+		<Form.Control type="text" placeholder="Search" value={query} onChange={(event) => {
 			if (searchTaskTimeout) {
 				clearTimeout(searchTaskTimeout);
 			}
 
 			const value = event.target.value;
+			setQuery(value);
 
 			setSearchTaskTimeout(setTimeout(() => {
 				setSearchTaskTimeout(null);
-				if (!value) {
-					setImages([]);
-					return;
-				}
-				search(dispatch, value).then(searchResult => setImages(searchResult.photos.results));
+				setPage(1);
+				setQuery(value);
+				clearRequestAfterCompletion((request ?? Promise.resolve()).then(() => search({dispatch, query: value, page, per_page: 30})).then(searchResult => {
+					setImages(searchResult.photos.results);
+				}));
 			}, 2000));
 		}} />
-		<ImageRack images={images.length === 0 ? cachedImages : images}/>
+		<ImageRack images={images.length === 0 ? cachedImages : images} onScrollThreshold={(isThresholdBreached) => {
+			console.log(isThresholdBreached);
+			if (!isThresholdBreached || request || !query) {
+				return;
+			}
+
+			const newPage = page + 1;
+			setPage(newPage);
+
+			clearRequestAfterCompletion(Promise.resolve()
+				.then(() => search({dispatch, query, page: newPage, per_page: 30}))
+				.then(searchResult => {
+					setImages(images.concat(searchResult.photos.results));
+				}));
+		}}/>
 	</Container>
 }
 
