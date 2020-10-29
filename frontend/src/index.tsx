@@ -13,7 +13,7 @@ import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useViewportScroll } from "framer-motion";
 import styles from "./styles.sass";
-import { DownloadIcon, SearchIcon, StarIcon, CircleIcon, CheckCircleFillIcon, CheckCircleIcon } from '@primer/octicons-react'
+import { DownloadIcon, SearchIcon, StarIcon, CircleIcon, CheckCircleFillIcon, CheckCircleIcon, XIcon } from '@primer/octicons-react'
 
 enum ActionType {
 	SearchCompleted
@@ -119,6 +119,53 @@ const store = createStore(
 	composeEnhancers()
 )
 
+function ImageGroupEntry(props: {
+	group: ImageGroup,
+	isSelected: boolean,
+	onChange?: (isSelected: boolean) => void,
+	onDelete?: () => void
+}): JSX.Element {
+	return <Form.Check className="px-2 pb-2" key={props.group.id} type="checkbox" id={`image-group-${props.group.id}`}>
+		<Form.Check.Input
+			style={{display: "none"}}
+			type="checkbox"
+			checked={props.isSelected}
+			onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+				if (props.onChange) {
+					props.onChange(event.target.checked);
+				}
+			}}
+			/>
+		<div className="d-flex align-items-center">
+			<Form.Check.Label className={`${styles.checkboxLabel}`}>
+				<span>{
+					props.isSelected
+						? <CheckCircleFillIcon size={20} />
+						: <CircleIcon size={20} />
+				}</span>
+
+				<span className={styles.hoverImage}>
+					<CheckCircleIcon size={20}/>
+				</span>
+
+				<span className={styles.activeImage}>{
+					props.isSelected
+						? <CircleIcon size={20} />
+						: <CheckCircleFillIcon size={20} />
+				}</span>
+
+				<span className="ml-2">{props.group.name}</span>
+			</Form.Check.Label>
+			<div className="flex-fill"></div>
+			<div style={{cursor:"pointer"}} onClick={() => {
+				if (props.onDelete) {
+					props.onDelete();
+				}
+			}}><XIcon size={20} /></div>
+		</div>
+	</Form.Check>
+}
+
 function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX.Element {
 	const dispatch = useDispatch();
 	const imageGroups = useSelector((state: State) => state.imageGroups);
@@ -149,42 +196,24 @@ function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX
 			<Modal.Title>Add to Favourites</Modal.Title>
 		</Modal.Header>
 		<Modal.Body>
-			{newImageGroups.map(group => {
-				const isInGroup = selectedGroups.indexOf(group) >= 0;
-				return <Form.Check className="px-2 pb-2" key={group.id} type="checkbox" id={`image-group-${group.id}`}>
-					<Form.Check.Input
-						style={{display: "none"}}
-						type="checkbox"
-						checked={isInGroup}
-						onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-							if (event.target.checked) {
-								setSelectedGroups(selectedGroups.concat(group));
-								return;
-							}
-							setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
-						}}
-						/>
-					<Form.Check.Label className={`${styles.checkboxLabel}`}>
-						<span>{
-							isInGroup
-								? <CheckCircleFillIcon size={20} />
-								: <CircleIcon size={20} />
-						}</span>
-
-						<span className={styles.hoverImage}>
-							<CheckCircleIcon size={20}/>
-						</span>
-
-						<span className={styles.activeImage}>{
-							isInGroup
-								? <CircleIcon size={20} />
-								: <CheckCircleFillIcon size={20} />
-						}</span>
-
-						<span className="ml-2">{group.name}</span>
-					</Form.Check.Label>
-				</Form.Check>
-			})}
+			{newImageGroups.map(group =>
+				<ImageGroupEntry
+					key={group.id}
+					group={group}
+					isSelected={selectedGroups.indexOf(group) >= 0}
+					onChange={(isSelected) => {
+						if (isSelected) {
+							setSelectedGroups(selectedGroups.concat(group));
+							return;
+						}
+						setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
+					}}
+					onDelete={() => {
+						setNewImageGroups(newImageGroups.filter(newGroup => newGroup !== group));
+						setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
+					}}
+				/>
+			)}
 			<Form.Control
 				className="mt-2"
 				type="text"
@@ -201,10 +230,10 @@ function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX
 		</Modal.Body>
 		<Modal.Footer>
 			<Button variant="secondary" onClick={() => props.onHide && props.onHide()}>
-			Close
+			Cancel
 			</Button>
 			<Button variant="primary" onClick={() => props.onHide && props.onHide()}>
-			Save Changes
+			Save
 			</Button>
 		</Modal.Footer>
 	</>
