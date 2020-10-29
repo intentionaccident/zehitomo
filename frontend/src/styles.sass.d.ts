@@ -1,5 +1,8 @@
 declare namespace StylesSassNamespace {
   export interface IStylesSass {
+    activeImage: string;
+    checkboxLabel: string;
+    hoverImage: string;
     image: string;
     overlay: string;
   }

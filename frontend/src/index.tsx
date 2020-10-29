@@ -7,12 +7,13 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
+import InputGroup from 'react-bootstrap/InputGroup';
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useViewportScroll } from "framer-motion";
 import styles from "./styles.sass";
-import { DownloadIcon, StarIcon } from '@primer/octicons-react'
+import { DownloadIcon, SearchIcon, StarIcon, CircleIcon, CheckCircleFillIcon, CheckCircleIcon } from '@primer/octicons-react'
 
 enum ActionType {
 	SearchCompleted
@@ -70,8 +71,15 @@ function search({ dispatch, query, page, per_page = 10}: { dispatch: Dispatch, q
 		});
 }
 
+interface ImageGroup {
+	images: Image[];
+	name: string;
+	id: string;
+}
+
 interface State {
-	images: Record<string, Image>
+	images: Record<string, Image>;
+	imageGroups: ImageGroup[];
 }
 
 function mainReducer(state: State, action: Action<ActionType>): State {
@@ -105,17 +113,92 @@ const store = createStore(
 		mainReducer
 	),
 	{
-		images: {}
+		images: {},
+		imageGroups: []
 	} as State as any,
 	composeEnhancers()
 )
 
 function FavouriteGroupSelector(props: {image: Image, onHide?: () => void}): JSX.Element {
+	const dispatch = useDispatch();
+	const imageGroups = useSelector((state: State) => state.imageGroups);
+	const [newGroupName, setNewGroupName] = React.useState("");
+	const [newImageGroups, setNewImageGroups] = React.useState<ImageGroup[]>([]);
+	const [selectedGroups, setSelectedGroups] = React.useState(
+		(imageGroups.concat(newImageGroups)).filter(group => group.images.indexOf(props.image) >= 0)
+	);
+
+	function addGroup() {
+		if (!newGroupName) {
+			return;
+		}
+
+		const newGroup = {
+			id: Math.random().toString(36).substring(7),
+			images: [] as Image[],
+			name: newGroupName
+		};
+
+		setNewImageGroups(newImageGroups.concat([newGroup]));
+		setSelectedGroups(selectedGroups.concat([newGroup]));
+		setNewGroupName("");
+	}
+
 	return <>
 		<Modal.Header>
-			<Modal.Title>Add to favourites</Modal.Title>
+			<Modal.Title>Add to Favourites</Modal.Title>
 		</Modal.Header>
-		<Modal.Body>Woohoo, youre reading this text in a modal!</Modal.Body>
+		<Modal.Body>
+			{newImageGroups.map(group => {
+				const isInGroup = selectedGroups.indexOf(group) >= 0;
+				return <Form.Check className="px-2 pb-2" key={group.id} type="checkbox" id={`image-group-${group.id}`}>
+					<Form.Check.Input
+						style={{display: "none"}}
+						type="checkbox"
+						checked={isInGroup}
+						onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+							if (event.target.checked) {
+								setSelectedGroups(selectedGroups.concat(group));
+								return;
+							}
+							setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
+						}}
+						/>
+					<Form.Check.Label className={`${styles.checkboxLabel}`}>
+						<span>{
+							isInGroup
+								? <CheckCircleFillIcon size={20} />
+								: <CircleIcon size={20} />
+						}</span>
+
+						<span className={styles.hoverImage}>
+							<CheckCircleIcon size={20}/>
+						</span>
+
+						<span className={styles.activeImage}>{
+							isInGroup
+								? <CircleIcon size={20} />
+								: <CheckCircleFillIcon size={20} />
+						}</span>
+
+						<span className="ml-2">{group.name}</span>
+					</Form.Check.Label>
+				</Form.Check>
+			})}
+			<Form.Control
+				className="mt-2"
+				type="text"
+				placeholder="Add Group"
+				value={newGroupName}
+				onChange={(event) => setNewGroupName(event.target.value)}
+				onBlur={addGroup}
+				onKeyUp={(event: React.KeyboardEvent<HTMLInputElement>) => {
+					if (event.key === "Enter") {
+						addGroup();
+					}
+				}}
+			/>
+		</Modal.Body>
 		<Modal.Footer>
 			<Button variant="secondary" onClick={() => props.onHide && props.onHide()}>
 			Close

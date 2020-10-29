@@ -21,3 +21,23 @@
 			-ms-flex-direction: column
 			flex-direction: column
 			background-color: rgba(0, 0, 0, 0.3)
+
+.checkboxLabel
+	cursor: pointer
+
+	.hoverImage > svg, .activeImage > svg
+		display: none !important
+
+	&:hover
+		*:not(.hoverImage) svg
+			display: none !important
+		.hoverImage > svg
+			display: inline-block !important
+
+	&:active
+		*:not(.activeImage) svg
+			display: none !important
+		.activeImage > svg
+			display: inline-block !important
+
+
