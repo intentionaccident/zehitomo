@@ -5,11 +5,14 @@ import { useDispatch } from "react-redux";
 import { ImageGroup } from "../State";
 import { TrashIcon } from "@primer/octicons-react";
 import { deleteGroup } from "../Actions";
+import { Redirect, useHistory } from "react-router";
 
 
 export function DeleteFavouritesGroupButton(props: { group: ImageGroup; variant?: string }): JSX.Element {
 	const dispatch = useDispatch();
 	const [showConfirmation, setShowConfirmation] = React.useState(false);
+	const history = useHistory();
+
 	function modalClosed(accepted: boolean) {
 		setShowConfirmation(false);
 		if (!accepted) {
@@ -20,6 +23,8 @@ export function DeleteFavouritesGroupButton(props: { group: ImageGroup; variant?
 			dispatch,
 			groupId: props.group.id
 		});
+
+		history.push("/");
 	}
 
 	return <><Button
