@@ -1,8 +1,10 @@
 import React from "react";
 import Container from "react-bootstrap/esm/Container";
+import Row from "react-bootstrap/esm/Row";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router";
-import { ImageGroup, State } from "src/State";
+import { State } from "src/State";
+import { DeleteFavouritesGroupButton } from "./DeleteFavouritesGroupButton";
 import { ImageRack } from "./ImageRack";
 
 export function FavouriteGroupDisplay(): JSX.Element {
@@ -12,7 +14,10 @@ export function FavouriteGroupDisplay(): JSX.Element {
     const images = useSelector((state: State) => group.imageIds.map(id => state.images[id]));
 
     return <Container>
-        {group.name}
+        <Row className="px-4">
+            <h3 className="text-center flex-fill">{group.name}</h3>
+            <DeleteFavouritesGroupButton variant="white" group={group}/>
+        </Row>
         <ImageRack images={images} />
     </Container>
 }

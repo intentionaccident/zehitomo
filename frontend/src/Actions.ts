@@ -4,6 +4,7 @@ import { ImageGroup, Image } from "./State";
 export enum ActionType {
 	SearchCompleted,
 	ImageAddedToFavourites,
+	ImageGroupDeleted,
 }
 
 export interface SearchCompletedAction extends Action<ActionType.SearchCompleted> {
@@ -13,6 +14,10 @@ export interface SearchCompletedAction extends Action<ActionType.SearchCompleted
 export interface ImageAddedToFavouritesAction extends Action<ActionType.ImageAddedToFavourites> {
 	imageId: string;
 	groups: ImageGroup[];
+}
+
+export interface ImageGroupDeletedAction extends Action<ActionType.ImageGroupDeleted> {
+	groupId: string;
 }
 
 function buildApiUrl(path: string): URL {
@@ -59,5 +64,15 @@ export function addToFavourites({ dispatch, image, groups }: {
 		type: ActionType.ImageAddedToFavourites,
 		imageId: image.id,
 		groups
+	})
+}
+
+export function deleteGroup({ dispatch, groupId }: {
+	dispatch: Dispatch,
+	groupId: string
+}): void {
+	dispatch<ImageGroupDeletedAction>({
+		type: ActionType.ImageGroupDeleted,
+		groupId,
 	})
 }

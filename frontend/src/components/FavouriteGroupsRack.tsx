@@ -6,8 +6,7 @@ import { splitIntoGroups } from "./ImageRack";
 import styles from "../styles.sass";
 import { BasicImageDisplay } from "./BasicImageDisplay";
 import { Link } from "react-router-dom";
-import Button from 'react-bootstrap/Button';
-import { TrashIcon } from "@primer/octicons-react";
+import { DeleteFavouritesGroupButton } from "./DeleteFavouritesGroupButton";
 
 export function FavouriteGroupRack(): JSX.Element {
 	const groups = useSelector((state: State) => state.imageGroups);
@@ -33,9 +32,7 @@ export function FavouriteGroupRack(): JSX.Element {
 									{preview.group.name}
 								</Link>
 								<div className="flex-fill"/>
-								<Button variant="light" size="sm">
-									<TrashIcon size={20}/>
-								</Button>
+								<DeleteFavouritesGroupButton group={preview.group} />
 							</div>
 						</div>
 					</BasicImageDisplay>

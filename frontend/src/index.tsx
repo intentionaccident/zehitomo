@@ -8,7 +8,7 @@ import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ImageSearch } from "./components/ImageSearch";
 import { State, Image } from "./State";
-import { ActionType, SearchCompletedAction, ImageAddedToFavouritesAction } from "./Actions";
+import { ActionType, SearchCompletedAction, ImageAddedToFavouritesAction, ImageGroupDeletedAction } from "./Actions";
 import { Header } from "./components/Header";
 import { FavouriteGroupRack } from "./components/FavouriteGroupsRack";
 import { FavouriteGroupDisplay } from "./components/FavouriteGroupDisplay";
@@ -48,6 +48,12 @@ function mainReducer(state: State, action: Action<ActionType>): State {
 					group.imageIds = [ imageAddedToFavouritesAction.imageId ]
 					return group;
 				}))
+			};
+		} case ActionType.ImageGroupDeleted: {
+			const imageGroupDeletedAction = action as ImageGroupDeletedAction;
+			return {
+				...state,
+				imageGroups: state.imageGroups.filter(group => group.id !== imageGroupDeletedAction.groupId)
 			};
 		}
 	}
