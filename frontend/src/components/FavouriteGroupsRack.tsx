@@ -15,7 +15,9 @@ function GroupActionPanel(props: {group: ImageGroup}): JSX.Element {
 			{props.group.name}
 		</Link>
 		<div className="flex-fill"/>
-		<DeleteFavouritesGroupButton group={props.group} />
+		<div className="ml-2">
+			<DeleteFavouritesGroupButton group={props.group} />
+		</div>
 	</div>
 }
 
