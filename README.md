@@ -1,14 +1,14 @@
-###How to run:
+### How to run:
 
 With Docker:
-```
+``` bash
 docker build . --tag zehitomo
 docker run -it -p 8080:80  -e ACCESS_KEY="KEY_GOES_HERE" zehitomo
 ```
 This starts the docker container attached to the terminal so you can quit with ctrl-C. You can change the port by changing 8080 to something else.
 
 Without docker:
-```
+``` bash
 cd frontend
 yarn
 yarn run webpack-dev-server --define process.env.UNSPLASH_API_KEY='\"KEY_GOES_HERE\"'
@@ -16,7 +16,7 @@ yarn run webpack-dev-server --define process.env.UNSPLASH_API_KEY='\"KEY_GOES_HE
 
 There is a live version available [here](http://loading.digital)
 
-###Overview
+### Overview
 
 I have opted to create just a React Redux SPA with an nginx proxy to redirect api requests to Unsplash with the access key header added. This lets me obfuscate the API key without having to implement a proxy server myself. The downside is it's still not very secure since anyone can just exploit the proxy server. It would be better to gate that behind some other authentication, like a user token for the site, but there wasn't time for this.
 
@@ -29,3 +29,5 @@ Some basic things to improve the site:
 * Let you edit groups after they're created.
 * Implement user login to persist data across browsers.
 * Make more search options available, such as search by user.
+
+Also the API is rate limited pretty severely at 50 requests an hour so I've made the page size as big as possible and increased the auto search timer to 2 seconds. The production tier API keys let you have 5000 requests an hour so that would be a good improvement.
