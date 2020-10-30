@@ -3,7 +3,7 @@ import { ImageGroup, Image } from "./State";
 
 export enum ActionType {
 	SearchCompleted,
-	ImageAddedToFavourites,
+	ImageGroupsUpdated,
 	ImageGroupDeleted,
 }
 
@@ -11,7 +11,7 @@ export interface SearchCompletedAction extends Action<ActionType.SearchCompleted
 	result: SearchResult;
 }
 
-export interface ImageAddedToFavouritesAction extends Action<ActionType.ImageAddedToFavourites> {
+export interface ImageGroupsUpdatedAction extends Action<ActionType.ImageGroupsUpdated> {
 	imageId: string;
 	groups: ImageGroup[];
 }
@@ -60,8 +60,8 @@ export function addToFavourites({ dispatch, image, groups }: {
 	image: Image,
 	groups: ImageGroup[]
 }): void {
-	dispatch<ImageAddedToFavouritesAction>({
-		type: ActionType.ImageAddedToFavourites,
+	dispatch<ImageGroupsUpdatedAction>({
+		type: ActionType.ImageGroupsUpdated,
 		imageId: image.id,
 		groups
 	})

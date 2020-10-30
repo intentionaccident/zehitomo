@@ -8,7 +8,7 @@ import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ImageSearch } from "./components/ImageSearch";
 import { State, Image } from "./State";
-import { ActionType, SearchCompletedAction, ImageAddedToFavouritesAction, ImageGroupDeletedAction } from "./Actions";
+import { ActionType, SearchCompletedAction, ImageGroupsUpdatedAction, ImageGroupDeletedAction } from "./Actions";
 import { Header } from "./components/Header";
 import { FavouriteGroupRack } from "./components/FavouriteGroupsRack";
 import { FavouriteGroupDisplay } from "./components/FavouriteGroupDisplay";
@@ -27,25 +27,34 @@ function mainReducer(state: State, action: Action<ActionType>): State {
 					}, {} as Record<string, Image>)
 				}
 			}
-		} case ActionType.ImageAddedToFavourites: {
-			const imageAddedToFavouritesAction = action as ImageAddedToFavouritesAction;
-			const newGroups = imageAddedToFavouritesAction.groups.filter(group =>
+		} case ActionType.ImageGroupsUpdated: {
+			const imageGroupsUpdatedAction = action as ImageGroupsUpdatedAction;
+			const newGroups = imageGroupsUpdatedAction.groups.filter(group =>
 				state.imageGroups.findIndex(existingGroup => existingGroup.id === group.id) < 0
 			);
 
 			return {
 				...state,
-				imageGroups: state.imageGroups.map(group => {
-					const updatedGroup = imageAddedToFavouritesAction.groups.find(selectedGroup => selectedGroup.id === group.id);
-					if (!updatedGroup) {
-						return group;
+				imageGroups: state.imageGroups.map(existingGroup => {
+					const groupShouldContainImage = imageGroupsUpdatedAction.groups.find(group => group.id === existingGroup.id) != null;
+					const groupUsedToContainImage = existingGroup.imageIds.indexOf(imageGroupsUpdatedAction.imageId) >= 0;
+					if (groupShouldContainImage === groupUsedToContainImage) {
+						return existingGroup;
 					}
+
+					if (groupUsedToContainImage && !groupShouldContainImage) {
+						return {
+							...existingGroup,
+							imageIds: existingGroup.imageIds.filter(id => id !== imageGroupsUpdatedAction.imageId)
+						}
+					}
+
 					return {
-						...group,
-						imageIds: [...group.imageIds, imageAddedToFavouritesAction.imageId]
+						...existingGroup,
+						imageIds: [...existingGroup.imageIds, imageGroupsUpdatedAction.imageId]
 					}
 				}).concat(newGroups.map(group => {
-					group.imageIds = [ imageAddedToFavouritesAction.imageId ]
+					group.imageIds = [ imageGroupsUpdatedAction.imageId ]
 					return group;
 				}))
 			};
