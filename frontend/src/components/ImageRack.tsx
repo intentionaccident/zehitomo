@@ -3,12 +3,12 @@ import { useViewportScroll } from "framer-motion";
 import Spinner from "react-bootstrap/esm/Spinner";
 import { Image } from "src/State";
 import { ImageDisplay } from "./ImageDisplay";
-import styles from "../styles.sass";
+import styles, { image } from "../styles.sass";
 import zehitomo from "../assets/zehitomo.svg";
 
 interface Column<T> {
 	things: T[],
-	advance: number,
+	length: number,
 	index: number,
 }
 
@@ -24,20 +24,19 @@ export function testScrollThreshold(
 export function splitIntoGroups<T>(objects: {height: number, object: T}[], numberOfGroups: number): Column<T>[] {
 	const columns: Column<T>[] = [...Array(numberOfGroups)].map((_, index) => ({
 		things: [],
-		advance: 0,
+		length: 0,
 		index
 	}));
 
 	for (const object of objects) {
+		console.log(columns[0].index, columns[0].length, columns[1].length, columns[2].length);
 		columns[0].things.push(object.object);
-		columns[0].advance += object.height;
-		columns.sort((a, b) => a.advance - b.advance);
-		for (const column of columns.slice(1)) {
-			column.advance -= columns[0].advance;
-		}
+		columns[0].length += object.height;
+		columns.sort((a, b) => a.length - b.length);
 	}
 
 	columns.sort((a, b) => a.index - b.index);
+
 	return columns;
 }
 
@@ -60,7 +59,7 @@ export function ImageRack(props: {
 	}, [scrollY, scrollYProgress, onScrollThreshold]);
 
 	const imageColumns = splitIntoGroups(props.images.map(image => ({
-		height: image.height,
+		height: image.height / image.width,
 		object: image
 	})), 3);
 

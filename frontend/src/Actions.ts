@@ -8,7 +8,7 @@ export enum ActionType {
 }
 
 export interface SearchCompletedAction extends Action<ActionType.SearchCompleted> {
-	result: SearchResult;
+	result: PhotoSearchResult;
 }
 
 export interface ImageGroupsUpdatedAction extends Action<ActionType.ImageGroupsUpdated> {
@@ -24,9 +24,13 @@ function buildApiUrl(path: string): URL {
 	return new URL(`http://localhost/api/${path}`);
 }
 
-export interface SearchResult {
+export interface PhotoSearchResult {
 	results: Image[];
 	total_pages: number;
+}
+
+export interface SearchResult {
+	photos: PhotoSearchResult;
 }
 
 export function search({ dispatch, query, page, per_page = 10}: {
@@ -34,7 +38,7 @@ export function search({ dispatch, query, page, per_page = 10}: {
 	query: string,
 	page: number,
 	per_page?: number
-}): Promise<SearchResult> {
+}): Promise<PhotoSearchResult> {
 	const url = buildApiUrl(`search/photos`);
 	const queryParameters: Record<string, string> = {
 		query,
@@ -45,10 +49,10 @@ export function search({ dispatch, query, page, per_page = 10}: {
 
 	return fetch(url.toString())
 		.then(response => response.json())
-		.then(result => {
+		.then((result: PhotoSearchResult) => {
 			dispatch<SearchCompletedAction>({
 				type: ActionType.SearchCompleted,
-				result
+				result: result
 			});
 			return result;
 		});

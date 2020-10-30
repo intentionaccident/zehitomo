@@ -29,7 +29,7 @@ export function FavouriteGroupRack(): JSX.Element {
 	})));
 
 	const columns = splitIntoGroups(previewImages.map(image => ({
-		height: (image.preview?.height ?? 0) + 50,
+		height: image.preview == null ? 50 :  image.preview.height / image.preview.width,
 		object: image
 	})), 3);
 
