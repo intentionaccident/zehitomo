@@ -42,8 +42,14 @@ export function FavouriteGroupRack(): JSX.Element {
 							{ preview.preview
 								? <BasicImageDisplay image={preview.preview}>
 									<div className={`${styles.favouriteGroupPreview} d-flex flex-column`}>
-										<div className="flex-fill"/>
 										<GroupActionPanel group={preview.group}/>
+										<div className="flex-fill"/>
+										{
+											preview.group.description
+												&& <div className={`d-flex align-items-center justify-content-center p-2 text-white font-italic ${styles.favouriteGroupActionBar}`}>
+													{preview.group.description}
+												</div>
+										}
 									</div>
 								</BasicImageDisplay>
 								: <GroupActionPanel group={preview.group}/>

@@ -15,7 +15,7 @@ export function FavouriteGroupDisplay(): JSX.Element {
 
     return <Container>
         <Row className="px-4">
-            <h3 className="text-center flex-fill">{group.name}</h3>
+            <h3 className="text-center flex-fill">{group.name}: <i>{group.description}</i></h3>
             <DeleteFavouritesGroupButton variant="white" group={group}/>
         </Row>
         <ImageRack images={images} />
