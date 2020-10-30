@@ -25,7 +25,7 @@ export function ImageRack(props: { images: Image[]; onScrollThreshold?: (isPastT
 		scrollYProgress.onChange(() => {
 			const wasPastThreshold = testScrollThreshold(scrollY.getPrevious(), scrollYProgress.getPrevious(), 800);
 			const isPastThreshold = testScrollThreshold(scrollY.get(), scrollYProgress.get(), 800);
-			if (isPastThreshold !== wasPastThreshold) {
+			if (isPastThreshold !== wasPastThreshold && onScrollThreshold) {
 				onScrollThreshold(isPastThreshold);
 			}
 		});

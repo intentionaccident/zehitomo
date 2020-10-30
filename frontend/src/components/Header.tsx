@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form';
 import zehitomo from "../assets/zehitomo.svg";
 import { useHistory, useLocation } from "react-router";
 import queryString from 'query-string';
+import { Link } from "react-router-dom";
 
 export function Header(): JSX.Element {
 	const [searchTaskTimeout, setSearchTaskTimeout] = React.useState<NodeJS.Timeout | null>(null);
@@ -56,7 +57,11 @@ export function Header(): JSX.Element {
 					redirectToSearch(query);
 				}} />
 			<Nav className="mr-auto">
-				<Nav.Link href="/favourites">Favourites</Nav.Link>
+				<Link to="/favourites" >
+					<Nav.Link as="div">
+						Favourites
+					</Nav.Link>
+				</Link>
 			</Nav>
 		</Container>
 	</Navbar>;

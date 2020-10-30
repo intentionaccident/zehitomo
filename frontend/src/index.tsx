@@ -9,6 +9,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { ImageSearch } from "./components/ImageSearch";
 import { State, Image } from "./State";
 import { ActionType, SearchCompletedAction, ImageAddedToFavouritesAction } from "./Actions";
+import { Header } from "./components/Header";
 
 function mainReducer(state: State, action: Action<ActionType>): State {
 	switch (action.type) {
@@ -74,8 +75,12 @@ ReactDOM.render(
 	<Provider store={store}>
 		<PersistGate loading={null} persistor={persistor}>
 			<BrowserRouter>
-				<Route path="/">
+				<Header/>
+				<Route exact path="/">
 					<ImageSearch/>
+				</Route>
+				<Route path="/favourites">
+					Hello
 				</Route>
 			</BrowserRouter>
 		</PersistGate>
