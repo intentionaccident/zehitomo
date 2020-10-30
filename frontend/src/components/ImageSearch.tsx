@@ -75,13 +75,11 @@ export function ImageSearch(): JSX.Element {
 		setSentRequest(newRequest);
 	}, [desiredPage, dispatch, images, query, sentRequest, totalPages]);
 
-	const cachedImages = useSelector((state: State) => Object.values(state.images).slice(0, 20));
-
 	const isLoading = !compareRequests(sentRequest, completedRequest);
 
 	return <Container>
 		<ImageRack
-			images={query ? images : cachedImages}
+			images={images}
 			isLoading={isLoading}
 			onScrollThreshold={(isThresholdBreached) => {
 				if (!isThresholdBreached || !query || isLoading || desiredPage >= totalPages) {
