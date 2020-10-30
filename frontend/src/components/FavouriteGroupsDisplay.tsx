@@ -2,9 +2,12 @@ import * as React from "react";
 import Container from "react-bootstrap/esm/Container";
 import { useSelector } from "react-redux";
 import { State } from "../State";
-import { ImageDisplay } from "./ImageDisplay";
 import { splitIntoGroups } from "./ImageRack";
 import styles from "../styles.sass";
+import { BasicImageDisplay } from "./BasicImageDisplay";
+import { Link } from "react-router-dom";
+import Button from 'react-bootstrap/Button';
+import { TrashIcon } from "@primer/octicons-react";
 
 export function FavouriteGroupsDisplay(): JSX.Element {
 	const groups = useSelector((state: State) => state.imageGroups);
@@ -21,10 +24,22 @@ export function FavouriteGroupsDisplay(): JSX.Element {
 	return <Container>
 		<div className="d-flex">
 			{columns.map(column => {
-				return <div className={styles.imageColumn} key={column.index}>{column.things.map(preview => <>
-					{preview.group.name}
-					<ImageDisplay key={preview.group.id} image={preview.preview} />
-				</>)}</div>;
+				return <div className={styles.imageColumn} key={column.index}>{column.things.map(preview =>
+					<BasicImageDisplay key={preview.group.id} image={preview.preview}>
+						<div className={`${styles.favouriteGroupPreview} d-flex flex-column`}>
+							<div className="flex-fill"/>
+							<div className={`d-flex align-items-center p-2 ${styles.favouriteGroupActionBar}`}>
+								<Link className="text-white" to={`/favourites/${preview.group.id}`}>
+									{preview.group.name}
+								</Link>
+								<div className="flex-fill"/>
+								<Button variant="light" size="sm">
+									<TrashIcon size={20}/>
+								</Button>
+							</div>
+						</div>
+					</BasicImageDisplay>
+				)}</div>;
 			})}
 		</div>
 	</Container>;

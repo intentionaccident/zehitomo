@@ -2,6 +2,8 @@ declare namespace StylesSassNamespace {
   export interface IStylesSass {
     activeImage: string;
     checkboxLabel: string;
+    favouriteGroupActionBar: string;
+    favouriteGroupPreview: string;
     hoverImage: string;
     image: string;
     imageColumn: string;

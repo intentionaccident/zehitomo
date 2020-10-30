@@ -6,21 +6,7 @@ import { DownloadIcon, StarFillIcon, StarIcon } from '@primer/octicons-react';
 import { Image, State } from "src/State";
 import { FavouriteGroupSelector } from "./FavouriteGroupSelector";
 import { useSelector } from "react-redux";
-
-function BasicImageDisplay(props: { image: Image; children?: JSX.Element | JSX.Element[]}): JSX.Element {
-	return <div
-		className={styles.image}
-		style={{
-			paddingBottom: `${props.image.height / props.image.width * 100}%`,
-			backgroundColor: props.image.color
-		}}
-	>
-		<img src={props.image.urls.small} />
-		<div className={styles.overlay}>
-			{props.children}
-		</div>
-	</div>
-}
+import { BasicImageDisplay } from "./BasicImageDisplay";
 
 export function ImageDisplay(props: { image: Image }): JSX.Element {
 	const [showFavouritesModal, setShowFavouritesModal] = React.useState(false);
@@ -45,7 +31,9 @@ export function ImageDisplay(props: { image: Image }): JSX.Element {
 				<div className="d-flex text-white align-items-center p-2">
 					<a href={props.image.user.links.html} className="div pl-2 text-white">{props.image.user.name ?? props.image.user.username}</a>
 					<div className="flex-fill" />
-					<Button as="a" variant="light" size="sm" href={props.image.links.download + "?force=true"} download={""}><DownloadIcon size={20} /></Button>
+					<Button as="a" variant="light" size="sm" href={props.image.links.download + "?force=true"} download={""}>
+						<DownloadIcon size={20} />
+					</Button>
 				</div>
 			</div>
 		</div>
