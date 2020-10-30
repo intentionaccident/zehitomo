@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import styles from "../styles.sass";
 import { DownloadIcon, StarFillIcon, StarIcon } from '@primer/octicons-react';
 import { Image, State } from "src/State";
-import { FavouriteGroupSelector } from "./FavouriteGroupSelector";
+import { ImageGroupEditor } from "./ImageGroupEditor";
 import { useSelector } from "react-redux";
 import { BasicImageDisplay } from "./BasicImageDisplay";
 
@@ -38,7 +38,7 @@ export function ImageDisplay(props: { image: Image }): JSX.Element {
 			</div>
 		</div>
 		<Modal show={showFavouritesModal} onHide={() => setShowFavouritesModal(false)} centered>
-			<FavouriteGroupSelector image={props.image} onHide={() => setShowFavouritesModal(false)} />
+			<ImageGroupEditor image={props.image} onHide={() => setShowFavouritesModal(false)} />
 		</Modal>
 	</BasicImageDisplay>
 }

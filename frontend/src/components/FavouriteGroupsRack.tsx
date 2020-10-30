@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import { TrashIcon } from "@primer/octicons-react";
 
-export function FavouriteGroupsDisplay(): JSX.Element {
+export function FavouriteGroupRack(): JSX.Element {
 	const groups = useSelector((state: State) => state.imageGroups);
 	const previewImages = useSelector((state: State) => groups.map(group => ({
 		group,

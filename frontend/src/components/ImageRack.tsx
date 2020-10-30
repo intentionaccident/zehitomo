@@ -10,7 +10,7 @@ interface Column<T> {
 	index: number,
 }
 
-function testScrollThreshold(
+export function testScrollThreshold(
 	scroll: number,
 	scrollProgress: number,
 	threshold: number

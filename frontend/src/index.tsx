@@ -10,7 +10,8 @@ import { ImageSearch } from "./components/ImageSearch";
 import { State, Image } from "./State";
 import { ActionType, SearchCompletedAction, ImageAddedToFavouritesAction } from "./Actions";
 import { Header } from "./components/Header";
-import { FavouriteGroupsDisplay } from "./components/FavouriteGroupsDisplay";
+import { FavouriteGroupRack } from "./components/FavouriteGroupsRack";
+import { FavouriteGroupDisplay } from "./components/FavouriteGroupDisplay";
 
 function mainReducer(state: State, action: Action<ActionType>): State {
 	switch (action.type) {
@@ -81,8 +82,11 @@ ReactDOM.render(
 					<Route exact path="/">
 						<ImageSearch/>
 					</Route>
+					<Route path="/favourites/:groupId">
+						<FavouriteGroupDisplay/>
+					</Route>
 					<Route path="/favourites">
-						<FavouriteGroupsDisplay/>
+						<FavouriteGroupRack/>
 					</Route>
 				</Switch>
 			</BrowserRouter>

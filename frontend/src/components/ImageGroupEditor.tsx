@@ -7,7 +7,7 @@ import { ImageGroupEntry } from "./ImageGroupEntry";
 import { State, Image, ImageGroup } from "src/State";
 import { addToFavourites } from "../Actions";
 
-export function FavouriteGroupSelector(props: { image: Image; onHide?: () => void; }): JSX.Element {
+export function ImageGroupEditor(props: { image: Image; onHide?: () => void; }): JSX.Element {
 	const dispatch = useDispatch();
 	const imageGroups = useSelector((state: State) => state.imageGroups);
 	const [newGroupName, setNewGroupName] = React.useState("");
