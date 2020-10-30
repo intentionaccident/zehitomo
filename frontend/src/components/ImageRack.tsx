@@ -65,9 +65,9 @@ export function ImageRack(props: {
 	return <>
 		<div className="d-flex">
 			{imageColumns.map(column => {
-				return <div className={styles.imageColumn} key={column.index}>
+				return <div className={`${column.index === 0 ? "" : "ml-3"} ${styles.imageColumn}`} key={column.index}>
 					{column.things.map(image =>
-						<div key={image.id} className={`${column.index === 0 ? "" : "ml-3"} mb-3`}>
+						<div key={image.id} className={`mb-3`}>
 							<ImageDisplay image={image} />
 						</div>
 					)}

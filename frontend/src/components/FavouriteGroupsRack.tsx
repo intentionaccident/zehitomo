@@ -36,9 +36,9 @@ export function FavouriteGroupRack(): JSX.Element {
 	return <Container>
 		<div className="d-flex">
 			{columns.map(column =>
-				<div className={styles.imageColumn} key={column.index}>
+				<div className={`${column.index === 0 ? "" : "ml-3"} ${styles.imageColumn}`} key={column.index}>
 					{column.things.map(preview =>
-						<div key={preview.group.id} className={`${column.index === 0 ? "" : "ml-3"} mb-3`}>
+						<div key={preview.group.id} className={`mb-3`}>
 							{ preview.preview
 								? <BasicImageDisplay image={preview.preview}>
 									<div className={`${styles.favouriteGroupPreview} d-flex flex-column`}>
