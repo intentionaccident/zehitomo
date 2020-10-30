@@ -8,36 +8,31 @@ import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ImageSearch } from "./components/ImageSearch";
 import { State, Image } from "./State";
-import { ActionType, SearchCompletedAction, ImageGroupsUpdatedAction, ImageGroupDeletedAction } from "./Actions";
+import { ActionType, ImageGroupsUpdatedAction, ImageGroupDeletedAction } from "./Actions";
 import { Header } from "./components/Header";
 import { FavouriteGroupRack } from "./components/FavouriteGroupsRack";
 import { FavouriteGroupDisplay } from "./components/FavouriteGroupDisplay";
 
 function mainReducer(state: State, action: Action<ActionType>): State {
 	switch (action.type) {
-		case ActionType.SearchCompleted: {
-			const searchCompletedAction = action as SearchCompletedAction;
-			return {
-				...state,
-				images: {
-					...state.images,
-					...searchCompletedAction.result.results.reduce((total, next) => {
-						total[next.id] = next;
-						return total;
-					}, {} as Record<string, Image>)
-				}
-			}
-		} case ActionType.ImageGroupsUpdated: {
+		case ActionType.ImageGroupsUpdated: {
 			const imageGroupsUpdatedAction = action as ImageGroupsUpdatedAction;
 			const newGroups = imageGroupsUpdatedAction.groups.filter(group =>
 				state.imageGroups.findIndex(existingGroup => existingGroup.id === group.id) < 0
 			);
 
+			const newImageContainer: Record<string, Image> = {};
+			newImageContainer[imageGroupsUpdatedAction.image.id] = imageGroupsUpdatedAction.image;
+
 			return {
 				...state,
+				images: {
+					...state.images,
+					...newImageContainer
+				},
 				imageGroups: state.imageGroups.map(existingGroup => {
 					const groupShouldContainImage = imageGroupsUpdatedAction.groups.find(group => group.id === existingGroup.id) != null;
-					const groupUsedToContainImage = existingGroup.imageIds.indexOf(imageGroupsUpdatedAction.imageId) >= 0;
+					const groupUsedToContainImage = existingGroup.imageIds.indexOf(imageGroupsUpdatedAction.image.id) >= 0;
 					if (groupShouldContainImage === groupUsedToContainImage) {
 						return existingGroup;
 					}
@@ -45,16 +40,16 @@ function mainReducer(state: State, action: Action<ActionType>): State {
 					if (groupUsedToContainImage && !groupShouldContainImage) {
 						return {
 							...existingGroup,
-							imageIds: existingGroup.imageIds.filter(id => id !== imageGroupsUpdatedAction.imageId)
+							imageIds: existingGroup.imageIds.filter(id => id !== imageGroupsUpdatedAction.image.id)
 						}
 					}
 
 					return {
 						...existingGroup,
-						imageIds: [...existingGroup.imageIds, imageGroupsUpdatedAction.imageId]
+						imageIds: [...existingGroup.imageIds, imageGroupsUpdatedAction.image.id]
 					}
 				}).concat(newGroups.map(group => {
-					group.imageIds = [ imageGroupsUpdatedAction.imageId ]
+					group.imageIds = [ imageGroupsUpdatedAction.image.id ]
 					return group;
 				}))
 			};

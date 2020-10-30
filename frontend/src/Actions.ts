@@ -2,17 +2,12 @@ import { Action, Dispatch } from "redux";
 import { ImageGroup, Image } from "./State";
 
 export enum ActionType {
-	SearchCompleted,
 	ImageGroupsUpdated,
 	ImageGroupDeleted,
 }
 
-export interface SearchCompletedAction extends Action<ActionType.SearchCompleted> {
-	result: PhotoSearchResult;
-}
-
 export interface ImageGroupsUpdatedAction extends Action<ActionType.ImageGroupsUpdated> {
-	imageId: string;
+	image: Image;
 	groups: ImageGroup[];
 }
 
@@ -50,10 +45,6 @@ export function search({ dispatch, query, page, per_page = 10}: {
 	return fetch(url.toString())
 		.then(response => response.json())
 		.then((result: PhotoSearchResult) => {
-			dispatch<SearchCompletedAction>({
-				type: ActionType.SearchCompleted,
-				result: result
-			});
 			return result;
 		});
 }
@@ -65,7 +56,7 @@ export function addToFavourites({ dispatch, image, groups }: {
 }): void {
 	dispatch<ImageGroupsUpdatedAction>({
 		type: ActionType.ImageGroupsUpdated,
-		imageId: image.id,
+		image,
 		groups
 	})
 }

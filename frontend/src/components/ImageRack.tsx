@@ -3,7 +3,7 @@ import { useViewportScroll } from "framer-motion";
 import Spinner from "react-bootstrap/esm/Spinner";
 import { Image } from "src/State";
 import { ImageDisplay } from "./ImageDisplay";
-import styles, { image } from "../styles.sass";
+import styles from "../styles.sass";
 import zehitomo from "../assets/zehitomo.svg";
 
 interface Column<T> {
