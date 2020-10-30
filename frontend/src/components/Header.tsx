@@ -25,7 +25,9 @@ export function Header(): JSX.Element {
 	return <Navbar bg="light" sticky="top">
 		<Container className="px-4">
 			<Navbar.Brand>
-				<img src={zehitomo} />
+				<Link to="/">
+					<img src={zehitomo} />
+				</Link>
 			</Navbar.Brand>
 			<Form.Control
 				type="text"
