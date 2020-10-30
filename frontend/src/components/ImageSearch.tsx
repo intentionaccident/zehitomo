@@ -38,7 +38,7 @@ export function ImageSearch(): JSX.Element {
 	const query = queryString.parse(location.search).query as string;
 
 	React.useEffect(() => {
-		if (!query || desiredPage > totalPages) {
+		if (!query || desiredPage > totalPages && totalPages > 0) {
 			return;
 		}
 
