@@ -11,6 +11,7 @@ export function ImageGroupEditor(props: { image: Image; onHide?: () => void; }):
 	const dispatch = useDispatch();
 	const imageGroups = useSelector((state: State) => state.imageGroups);
 	const [newGroupName, setNewGroupName] = React.useState("");
+	const [newGroupDescription, setNewGroupDescription] = React.useState("");
 	const [newImageGroups, setNewImageGroups] = React.useState<ImageGroup[]>([]);
 	const [selectedGroups, setSelectedGroups] = React.useState(
 		(imageGroups.concat(newImageGroups)).filter(group => group.imageIds.indexOf(props.image.id) >= 0)
@@ -24,12 +25,14 @@ export function ImageGroupEditor(props: { image: Image; onHide?: () => void; }):
 		const newGroup: ImageGroup = {
 			id: Math.random().toString(36).substring(7),
 			imageIds: [],
-			name: newGroupName
+			name: newGroupName,
+			description: newGroupDescription
 		};
 
 		setNewImageGroups(newImageGroups.concat([newGroup]));
 		setSelectedGroups(selectedGroups.concat([newGroup]));
 		setNewGroupName("");
+		setNewGroupDescription("");
 	}
 
 	return <>
@@ -56,18 +59,32 @@ export function ImageGroupEditor(props: { image: Image; onHide?: () => void; }):
 						setSelectedGroups(selectedGroups.filter(selectedGroup => selectedGroup !== group));
 					}} />
 				)}
+
 			<Form.Control
 				className="mt-2"
 				type="text"
-				placeholder="Add Group"
+				placeholder="Group Name"
 				value={newGroupName}
 				onChange={(event) => setNewGroupName(event.target.value)}
-				onBlur={addGroup}
-				onKeyUp={(event: React.KeyboardEvent<HTMLInputElement>) => {
-					if (event.key === "Enter") {
-						addGroup();
-					}
-				}} />
+			/>
+			<Form.Control
+				className="mt-2"
+				type="text"
+				placeholder="Group Description"
+				value={newGroupDescription}
+				onChange={(event) => setNewGroupDescription(event.target.value)}
+			/>
+
+			<div className="text-right mt-2">
+				<Button
+					variant="secondary"
+					disabled={!newGroupName}
+					onClick={addGroup}
+				>
+					Add Group
+				</Button>
+			</div>
+
 		</Modal.Body>
 		<Modal.Footer>
 			<Button variant="secondary" onClick={() => props.onHide && props.onHide()}>

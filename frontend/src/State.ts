@@ -21,6 +21,7 @@ export interface Image {
 export interface ImageGroup {
 	imageIds?: string[];
 	name: string;
+	description: string;
 	id: string;
 }
 

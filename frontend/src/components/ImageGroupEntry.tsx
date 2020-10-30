@@ -38,8 +38,9 @@ export function ImageGroupEntry(props: {
 				<span className="ml-2">{props.group.name}</span>
 			</Form.Check.Label>
 			<div className="flex-fill"></div>
+			<span className="ml-2 font-italic">{props.group.description}</span>
 			{props.canDelete &&
-				<div style={{ cursor: "pointer" }} onClick={() => {
+				<div className="ml-2" style={{ cursor: "pointer" }} onClick={() => {
 					if (props.onDelete) {
 						props.onDelete();
 					}
