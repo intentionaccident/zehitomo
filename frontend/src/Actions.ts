@@ -25,9 +25,8 @@ function buildApiUrl(path: string): URL {
 }
 
 export interface SearchResult {
-	photos: {
-		results: Image[];
-	}
+	results: Image[];
+	total_pages: number;
 }
 
 export function search({ dispatch, query, page, per_page = 10}: {
@@ -36,7 +35,7 @@ export function search({ dispatch, query, page, per_page = 10}: {
 	page: number,
 	per_page?: number
 }): Promise<SearchResult> {
-	const url = buildApiUrl(`search`);
+	const url = buildApiUrl(`search/photos`);
 	const queryParameters: Record<string, string> = {
 		query,
 		page: page.toString(),

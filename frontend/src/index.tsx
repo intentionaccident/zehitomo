@@ -21,7 +21,7 @@ function mainReducer(state: State, action: Action<ActionType>): State {
 				...state,
 				images: {
 					...state.images,
-					...searchCompletedAction.result.photos.results.reduce((total, next) => {
+					...searchCompletedAction.result.results.reduce((total, next) => {
 						total[next.id] = next;
 						return total;
 					}, {} as Record<string, Image>)

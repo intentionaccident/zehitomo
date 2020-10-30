@@ -8,7 +8,7 @@ import zehitomo from "../assets/zehitomo.svg";
 
 interface Column<T> {
 	things: T[],
-	length: number,
+	advance: number,
 	index: number,
 }
 
@@ -24,14 +24,17 @@ export function testScrollThreshold(
 export function splitIntoGroups<T>(objects: {height: number, object: T}[], numberOfGroups: number): Column<T>[] {
 	const columns: Column<T>[] = [...Array(numberOfGroups)].map((_, index) => ({
 		things: [],
-		length: 0,
+		advance: 0,
 		index
 	}));
 
 	for (const object of objects) {
 		columns[0].things.push(object.object);
-		columns[0].length += object.height;
-		columns.sort((a, b) => a.length - b.length);
+		columns[0].advance += object.height;
+		columns.sort((a, b) => a.advance - b.advance);
+		for (const column of columns.slice(1)) {
+			column.advance -= columns[0].advance;
+		}
 	}
 
 	columns.sort((a, b) => a.index - b.index);

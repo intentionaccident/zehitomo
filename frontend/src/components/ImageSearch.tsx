@@ -7,56 +7,88 @@ import { search } from "../Actions";
 import { useLocation } from "react-router";
 import queryString from 'query-string';
 
+interface Request {
+	page: number;
+	query: string;
+}
+
+function compareRequests(a: Request, b: Request): boolean {
+	if (a == b){
+		return true;
+	}
+
+	if (a == null || b == null) {
+		return false;
+	}
+
+	return a.page === b.page && a.query === b.query;
+}
+
 export function ImageSearch(): JSX.Element {
 	const dispatch = useDispatch();
 	const [images, setImages] = React.useState<Image[]>([]);
-	const [page, setPage] = React.useState(0);
-	const [loadedPage, setLoadedPage] = React.useState(0);
-	const [loadedQuery, setLoadedQuery] = React.useState<string>(undefined);
+
+	const [desiredPage, setDesiredPage] = React.useState(1);
+	const [totalPages, setTotalPages] = React.useState(1);
+
+	const [sentRequest, setSentRequest] = React.useState<Request>(null);
+	const [completedRequest, setCompletedRequest] = React.useState<Request>(null);
+
 	const location = useLocation();
 	const query = queryString.parse(location.search).query as string;
 
 	React.useEffect(() => {
-		if (!query || (query === loadedQuery && loadedPage === page)) {
+		if (!query || desiredPage > totalPages) {
 			return;
 		}
 
-		let requestedPage = page;
+		const newRequest: Request = {
+			page: desiredPage,
+			query
+		};
 
-		if (query !== loadedQuery) {
-			setLoadedPage(0);
-			setPage(1);
-			requestedPage = 1;
+		if (query !== sentRequest?.query) {
+			newRequest.page = 1;
+			setDesiredPage(1);
+			setTotalPages(1);
+		}
+
+		if (compareRequests(sentRequest, newRequest)) {
+			return;
 		}
 
 		search({
 			dispatch,
-			query,
-			page: requestedPage,
+			query: newRequest.query,
+			page: newRequest.page,
 			per_page: 30
 		}).then(result => {
 			setImages(
-				(requestedPage > 1 ? images : [])
-					.concat(result.photos.results)
+				(newRequest.page > 1 ? images : [])
+					.concat(result.results)
 					.filter((image, index, array) => array.findIndex(possibleDuplicate => possibleDuplicate.id === image.id) === index)
 			)
-			setLoadedPage(requestedPage);
-			setLoadedQuery(query);
+			setTotalPages(result.total_pages);
+			setCompletedRequest(newRequest);
 		});
-	}, [dispatch, query, loadedQuery, page, loadedPage, images]);
+
+		setSentRequest(newRequest);
+	}, [desiredPage, dispatch, images, query, sentRequest, totalPages]);
 
 	const cachedImages = useSelector((state: State) => Object.values(state.images).slice(0, 20));
+
+	const isLoading = !compareRequests(sentRequest, completedRequest);
 
 	return <Container>
 		<ImageRack
 			images={query ? images : cachedImages}
-			isLoading={query !== loadedQuery || loadedPage !== page}
+			isLoading={isLoading}
 			onScrollThreshold={(isThresholdBreached) => {
-				if (!isThresholdBreached || loadedPage < page || !query) {
+				if (!isThresholdBreached || !query || isLoading || desiredPage >= totalPages) {
 					return;
 				}
 
-				setPage(page + 1);
+				setDesiredPage(desiredPage + 1);
 			}}
 		/>
 	</Container>;
