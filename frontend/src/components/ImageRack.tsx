@@ -1,8 +1,10 @@
 import * as React from "react";
 import { useViewportScroll } from "framer-motion";
+import Spinner from "react-bootstrap/esm/Spinner";
 import { Image } from "src/State";
 import { ImageDisplay } from "./ImageDisplay";
 import styles from "../styles.sass";
+import zehitomo from "../assets/zehitomo.svg";
 
 interface Column<T> {
 	things: T[],
@@ -36,7 +38,11 @@ export function splitIntoGroups<T>(objects: {height: number, object: T}[], numbe
 	return columns;
 }
 
-export function ImageRack(props: { images: Image[]; onScrollThreshold?: (isPastThreshold: boolean) => void; }): JSX.Element {
+export function ImageRack(props: {
+	images: Image[];
+	onScrollThreshold?: (isPastThreshold: boolean) => void;
+	isLoading?: boolean
+}): JSX.Element {
 	const { scrollY, scrollYProgress } = useViewportScroll();
 	const { onScrollThreshold } = props;
 	React.useEffect(() => {
@@ -55,15 +61,23 @@ export function ImageRack(props: { images: Image[]; onScrollThreshold?: (isPastT
 		object: image
 	})), 3);
 
-	return <div className="d-flex">
-		{imageColumns.map(column => {
-			return <div className={styles.imageColumn} key={column.index}>
-				{column.things.map(image =>
-					<div key={image.id} className={`${column.index === 0 ? "" : "ml-3"} mb-3`}>
-						<ImageDisplay image={image} />
-					</div>
-				)}
-			</div>;
-		})}
-	</div>;
+	return <>
+		<div className="d-flex">
+			{imageColumns.map(column => {
+				return <div className={styles.imageColumn} key={column.index}>
+					{column.things.map(image =>
+						<div key={image.id} className={`${column.index === 0 ? "" : "ml-3"} mb-3`}>
+							<ImageDisplay image={image} />
+						</div>
+					)}
+				</div>;
+			})}
+		</div>
+		<div className="text-center p-5">
+			{ props.isLoading
+				? <Spinner animation="border"/>
+				: <img src={zehitomo} />
+			}
+		</div>
+	</>;
 }
