@@ -22,22 +22,26 @@ export function FavouriteGroupRack(): JSX.Element {
 
 	return <Container>
 		<div className="d-flex">
-			{columns.map(column => {
-				return <div className={styles.imageColumn} key={column.index}>{column.things.map(preview =>
-					<BasicImageDisplay key={preview.group.id} image={preview.preview}>
-						<div className={`${styles.favouriteGroupPreview} d-flex flex-column`}>
-							<div className="flex-fill"/>
-							<div className={`d-flex align-items-center p-2 ${styles.favouriteGroupActionBar}`}>
-								<Link className="text-white" to={`/favourites/${preview.group.id}`}>
-									{preview.group.name}
-								</Link>
-								<div className="flex-fill"/>
-								<DeleteFavouritesGroupButton group={preview.group} />
-							</div>
+			{columns.map(column =>
+				<div className={styles.imageColumn} key={column.index}>
+					{column.things.map(preview =>
+						<div key={preview.group.id} className={`${column.index === 0 ? "" : "ml-3"} mb-3`}>
+							<BasicImageDisplay image={preview.preview}>
+								<div className={`${styles.favouriteGroupPreview} d-flex flex-column`}>
+									<div className="flex-fill"/>
+									<div className={`d-flex align-items-center p-2 ${styles.favouriteGroupActionBar}`}>
+										<Link className="text-white" to={`/favourites/${preview.group.id}`}>
+											{preview.group.name}
+										</Link>
+										<div className="flex-fill"/>
+										<DeleteFavouritesGroupButton group={preview.group} />
+									</div>
+								</div>
+							</BasicImageDisplay>
 						</div>
-					</BasicImageDisplay>
-				)}</div>;
-			})}
+					)}
+				</div>
+			)}
 		</div>
 	</Container>;
 }
