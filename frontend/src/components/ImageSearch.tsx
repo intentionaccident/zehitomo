@@ -11,9 +11,9 @@ import zehitomo from "../assets/zehitomo.svg";
 import { useHistory, useLocation } from "react-router";
 import queryString from 'query-string';
 
-export function Header(): JSX.Element {
+export function Header(props: {searchQuery: string}): JSX.Element {
 	const [searchTaskTimeout, setSearchTaskTimeout] = React.useState<NodeJS.Timeout | null>(null);
-	const [query, setQuery] = React.useState<string>("");
+	const [query, setQuery] = React.useState<string>(props.searchQuery ?? "");
 	const history = useHistory();
 
 	function redirectToSearch(query: string) {
@@ -68,59 +68,51 @@ export function Header(): JSX.Element {
 export function ImageSearch(): JSX.Element {
 	const dispatch = useDispatch();
 	const [images, setImages] = React.useState<Image[]>([]);
-	const [page, setPage] = React.useState<number>(1);
-	const [request, setRequest] = React.useState<Promise<void>>(null);
-	const [requestClearCancellationToken, setRequestClearCancellationToken] = React.useState<{ isCancelled?: boolean; }>({});
+	const [page, setPage] = React.useState(1);
+	const [loadedPage, setLoadedPage] = React.useState(0);
+	const [loadedQuery, setLoadedQuery] = React.useState("");
 	const location = useLocation();
 	const query = queryString.parse(location.search).query as string;
 
 	React.useEffect(() => {
-		if (!query) {
+		if (!query || (query === loadedQuery && loadedPage === page)) {
 			return;
+		}
+
+		let requestedPage = page;
+
+		if (query !== loadedQuery) {
+			setLoadedPage(0);
+			setPage(1);
+			requestedPage = 1;
 		}
 
 		search({
 			dispatch,
 			query,
-			page: 1,
+			page: requestedPage,
 			per_page: 30
-		}).then(result => setImages(result.photos.results));
-	}, [query, dispatch]);
-
-	function clearRequestAfterCompletion(newRequest: Promise<void>) {
-		if (requestClearCancellationToken) {
-			requestClearCancellationToken.isCancelled = true;
-		}
-
-		const cancellationToken: { isCancelled?: boolean; } = {};
-		setRequestClearCancellationToken(cancellationToken);
-
-		newRequest.then(() => {
-			if (cancellationToken.isCancelled === true) {
-				return;
-			}
-			setRequest(null);
+		}).then(result => {
+			setImages(
+				(requestedPage > 1 ? images : [])
+					.concat(result.photos.results)
+					.filter((image, index, array) => array.findIndex(possibleDuplicate => possibleDuplicate.id === image.id) === index)
+			)
+			setLoadedPage(requestedPage);
+			setLoadedQuery(query);
 		});
-		setRequest(newRequest);
-	}
+	}, [dispatch, query, loadedQuery, page, loadedPage, images]);
 
 	const cachedImages = useSelector((state: State) => Object.values(state.images).slice(0, 20));
 
 	return <Container>
-		<Header />
+		<Header searchQuery={query}/>
 		<ImageRack images={images.length === 0 ? cachedImages : images} onScrollThreshold={(isThresholdBreached) => {
-			// if (!isThresholdBreached || request || !query) {
-			// 	return;
-			// }
+			if (!isThresholdBreached || loadedPage < page) {
+				return;
+			}
 
-			// const newPage = page + 1;
-			// setPage(newPage);
-
-			// clearRequestAfterCompletion(Promise.resolve()
-			// 	.then(() => search({ dispatch, query, page: newPage, per_page: 30 }))
-			// 	.then(searchResult => {
-			// 		setImages(images.concat(searchResult.photos.results));
-			// 	}));
+			setPage(page + 1);
 		}} />
 	</Container>;
 }

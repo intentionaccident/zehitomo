@@ -74,9 +74,6 @@ ReactDOM.render(
 	<Provider store={store}>
 		<PersistGate loading={null} persistor={persistor}>
 			<BrowserRouter>
-				<Route path="/:slug">
-					<ImageSearch/>
-				</Route>
 				<Route path="/">
 					<ImageSearch/>
 				</Route>
