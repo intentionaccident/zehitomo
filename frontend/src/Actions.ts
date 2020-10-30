@@ -16,7 +16,6 @@ export interface ImageGroupDeletedAction extends Action<ActionType.ImageGroupDel
 }
 
 function getBaseUrlPath(path: string): URL {
-	console.log(process.env);
 	if (process.env.UNSPLASH_API_KEY) {
 		return new URL(`https://api.unsplash.com/${path}`);
 	}
