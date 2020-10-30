@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createStore, compose, Action } from "redux";
 import { Provider } from "react-redux";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -10,7 +10,6 @@ import { ImageSearch } from "./components/ImageSearch";
 import { State, Image } from "./State";
 import { ActionType, SearchCompletedAction, ImageAddedToFavouritesAction } from "./Actions";
 import { Header } from "./components/Header";
-import Switch from "react-bootstrap/esm/Switch";
 import { FavouriteGroupsDisplay } from "./components/FavouriteGroupsDisplay";
 
 function mainReducer(state: State, action: Action<ActionType>): State {

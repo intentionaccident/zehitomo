@@ -4,6 +4,7 @@ declare namespace StylesSassNamespace {
     checkboxLabel: string;
     hoverImage: string;
     image: string;
+    imageColumn: string;
     overlay: string;
   }
 }

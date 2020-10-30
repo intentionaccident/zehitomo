@@ -2,6 +2,7 @@ import * as React from "react";
 import { useViewportScroll } from "framer-motion";
 import { Image } from "src/State";
 import { ImageDisplay } from "./ImageDisplay";
+import styles from "../styles.sass";
 
 interface Column<T> {
 	things: T[],
@@ -56,7 +57,7 @@ export function ImageRack(props: { images: Image[]; onScrollThreshold?: (isPastT
 
 	return <div className="d-flex">
 		{imageColumns.map(column => {
-			return <div key={column.index}>{column.things.map(image => <ImageDisplay key={image.id} image={image} />)}</div>;
+			return <div className={styles.imageColumn} key={column.index}>{column.things.map(image => <ImageDisplay key={image.id} image={image} />)}</div>;
 		})}
 	</div>;
 }

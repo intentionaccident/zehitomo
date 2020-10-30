@@ -1,8 +1,10 @@
 import * as React from "react";
+import Container from "react-bootstrap/esm/Container";
 import { useSelector } from "react-redux";
 import { State } from "../State";
 import { ImageDisplay } from "./ImageDisplay";
 import { splitIntoGroups } from "./ImageRack";
+import styles from "../styles.sass";
 
 export function FavouriteGroupsDisplay(): JSX.Element {
 	const groups = useSelector((state: State) => state.imageGroups);
@@ -16,12 +18,14 @@ export function FavouriteGroupsDisplay(): JSX.Element {
 		object: image
 	})), 3);
 
-	return <div className="d-flex">
-		{columns.map(column => {
-			return <div key={column.index}>{column.things.map(preview => <>
-				{preview.group.name}
-				<ImageDisplay key={preview.group.id} image={preview.preview} />
-			</>)}</div>;
-		})}
-	</div>;
+	return <Container>
+		<div className="d-flex">
+			{columns.map(column => {
+				return <div className={styles.imageColumn} key={column.index}>{column.things.map(preview => <>
+					{preview.group.name}
+					<ImageDisplay key={preview.group.id} image={preview.preview} />
+				</>)}</div>;
+			})}
+		</div>
+	</Container>;
 }
