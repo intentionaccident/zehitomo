@@ -15,8 +15,35 @@ export interface ImageGroupDeletedAction extends Action<ActionType.ImageGroupDel
 	groupId: string;
 }
 
-function buildApiUrl(path: string): URL {
+function getBaseUrlPath(path: string): URL {
+	console.log(process.env);
+	if (process.env.UNSPLASH_API_KEY) {
+		return new URL(`https://api.unsplash.com/${path}`);
+	}
+
+	if (process.env.NODE_ENV === "production") {
+		return new URL(`${location.protocol}//${location.host}/api/${path}`);
+	}
+
 	return new URL(`http://localhost/api/${path}`);
+}
+
+function buildApiUrl(path: string, queryParameters?: Record<string, string>): string {
+	const url = getBaseUrlPath(path);
+
+	if (process.env.UNSPLASH_API_KEY) {
+		if (!queryParameters) {
+			queryParameters = {};
+		}
+
+		queryParameters.client_id = process.env.UNSPLASH_API_KEY;
+	}
+
+	if (queryParameters) {
+		url.search = new URLSearchParams(queryParameters).toString();
+	}
+
+	return url.toString();
 }
 
 export interface PhotoSearchResult {
@@ -34,15 +61,14 @@ export function search({ dispatch, query, page, per_page = 10}: {
 	page: number,
 	per_page?: number
 }): Promise<PhotoSearchResult> {
-	const url = buildApiUrl(`search/photos`);
+
 	const queryParameters: Record<string, string> = {
 		query,
 		page: page.toString(),
 		per_page: per_page.toString()
 	};
-	url.search = new URLSearchParams(queryParameters).toString();
 
-	return fetch(url.toString())
+	return fetch(buildApiUrl(`search/photos`, queryParameters))
 		.then(response => response.json())
 		.then((result: PhotoSearchResult) => {
 			return result;
