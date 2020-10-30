@@ -29,7 +29,6 @@ export function splitIntoGroups<T>(objects: {height: number, object: T}[], numbe
 	}));
 
 	for (const object of objects) {
-		console.log(columns[0].index, columns[0].length, columns[1].length, columns[2].length);
 		columns[0].things.push(object.object);
 		columns[0].length += object.height;
 		columns.sort((a, b) => a.length - b.length);
