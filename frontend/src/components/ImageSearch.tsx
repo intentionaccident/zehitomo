@@ -1,7 +1,7 @@
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import Container from 'react-bootstrap/Container';
-import { Image, State } from "src/State";
+import { Image } from "src/State";
 import { ImageRack } from "./ImageRack";
 import { search } from "../Actions";
 import { useLocation } from "react-router";
@@ -38,7 +38,21 @@ export function ImageSearch(): JSX.Element {
 	const query = queryString.parse(location.search).query as string;
 
 	React.useEffect(() => {
-		if (!query || (desiredPage > totalPages && totalPages > 0)) {
+		// Don't make request if there is no query
+		if (!query) {
+			// If query got cleared we need to reset everything to the initial state
+			if (sentRequest !== null) {
+				setImages([])
+				setSentRequest(null);
+				setCompletedRequest(null);
+				setDesiredPage(1);
+				setTotalPages(1);
+			}
+			return;
+		}
+
+		// Don't make request if we have reached the end of the pages
+		if (desiredPage > totalPages && totalPages > 0) {
 			return;
 		}
 
@@ -47,12 +61,14 @@ export function ImageSearch(): JSX.Element {
 			query
 		};
 
+		// If the query changed we need to reset the page
 		if (query !== sentRequest?.query) {
 			newRequest.page = 1;
 			setDesiredPage(1);
 			setTotalPages(1);
 		}
 
+		// Don't make request if we have already sent the request
 		if (compareRequests(sentRequest, newRequest)) {
 			return;
 		}
