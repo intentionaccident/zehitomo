@@ -3,8 +3,8 @@ import { useViewportScroll } from "framer-motion";
 import { Image } from "src/State";
 import { ImageDisplay } from "./ImageDisplay";
 
-interface ImageColumn {
-	images: Image[],
+interface Column<T> {
+	things: T[],
 	length: number,
 	index: number,
 }
@@ -16,6 +16,23 @@ function testScrollThreshold(
 ): boolean {
 	const viewHeight = scroll / scrollProgress;
 	return !isNaN(viewHeight) && isFinite(viewHeight) && viewHeight - scroll < threshold;
+}
+
+export function splitIntoGroups<T>(objects: {height: number, object: T}[], numberOfGroups: number): Column<T>[] {
+	const columns: Column<T>[] = [...Array(numberOfGroups)].map((_, index) => ({
+		things: [],
+		length: 0,
+		index
+	}));
+
+	for (const object of objects) {
+		columns[0].things.push(object.object);
+		columns[0].length += object.height;
+		columns.sort((a, b) => a.length - b.length);
+	}
+
+	columns.sort((a, b) => a.index - b.index);
+	return columns;
 }
 
 export function ImageRack(props: { images: Image[]; onScrollThreshold?: (isPastThreshold: boolean) => void; }): JSX.Element {
@@ -32,23 +49,14 @@ export function ImageRack(props: { images: Image[]; onScrollThreshold?: (isPastT
 		return () => scrollYProgress.clearListeners();
 	}, [scrollY, scrollYProgress, onScrollThreshold]);
 
-	const imageColumns: ImageColumn[] = [...Array(3)].map((_, index) => ({
-		images: [],
-		length: 0,
-		index
-	}));
-
-	for (const image of props.images) {
-		imageColumns[0].images.push(image);
-		imageColumns[0].length += image.height;
-		imageColumns.sort((a, b) => a.length - b.length);
-	}
-
-	imageColumns.sort((a, b) => a.index - b.index);
+	const imageColumns = splitIntoGroups(props.images.map(image => ({
+		height: image.height,
+		object: image
+	})), 3);
 
 	return <div className="d-flex">
 		{imageColumns.map(column => {
-			return <div key={column.index}>{column.images.map(image => <ImageDisplay key={image.id} image={image} />)}</div>;
+			return <div key={column.index}>{column.things.map(image => <ImageDisplay key={image.id} image={image} />)}</div>;
 		})}
 	</div>;
 }

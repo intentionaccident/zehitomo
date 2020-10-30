@@ -10,6 +10,8 @@ import { ImageSearch } from "./components/ImageSearch";
 import { State, Image } from "./State";
 import { ActionType, SearchCompletedAction, ImageAddedToFavouritesAction } from "./Actions";
 import { Header } from "./components/Header";
+import Switch from "react-bootstrap/esm/Switch";
+import { FavouriteGroupsDisplay } from "./components/FavouriteGroupsDisplay";
 
 function mainReducer(state: State, action: Action<ActionType>): State {
 	switch (action.type) {
@@ -76,12 +78,14 @@ ReactDOM.render(
 		<PersistGate loading={null} persistor={persistor}>
 			<BrowserRouter>
 				<Header/>
-				<Route exact path="/">
-					<ImageSearch/>
-				</Route>
-				<Route path="/favourites">
-					Hello
-				</Route>
+				<Switch>
+					<Route exact path="/">
+						<ImageSearch/>
+					</Route>
+					<Route path="/favourites">
+						<FavouriteGroupsDisplay/>
+					</Route>
+				</Switch>
 			</BrowserRouter>
 		</PersistGate>
 	</Provider>,
