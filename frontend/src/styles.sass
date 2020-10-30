@@ -3,24 +3,35 @@
 	display: block
 
 	> img
-		max-width: 100%
+		position: absolute
+		left: 0
+		height: 100%
+		width: 100%
 		display: block
 
 	> .overlay
-		display: none
+		position: absolute
+		top: 0
+		bottom: 0
+		left: 0
+		right: 0
+
+.standaloneImage
+	height: 100%
+	width: 100%
 
 	&:hover
+		background-color: rgba(0, 0, 0, 0.3)
 		> .overlay
-			position: absolute
-			top: 0
-			bottom: 0
-			left: 0
-			right: 0
 			display: -ms-flexbox
 			display: flex
 			-ms-flex-direction: column
 			flex-direction: column
-			background-color: rgba(0, 0, 0, 0.3)
+
+	> .overlay
+		height: 100%
+		width: 100%
+		display: none
 
 .checkboxLabel
 	cursor: pointer

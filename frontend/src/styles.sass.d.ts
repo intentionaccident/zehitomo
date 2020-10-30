@@ -6,6 +6,7 @@ declare namespace StylesSassNamespace {
     image: string;
     imageColumn: string;
     overlay: string;
+    standaloneImage: string;
   }
 }
 
